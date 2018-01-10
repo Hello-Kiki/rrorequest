@@ -1,5 +1,7 @@
 package com.hellokiki.rrorequest;
 
+import android.support.annotation.NonNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -18,22 +20,24 @@ public class MultipartUtil {
 
     }
 
-    public List<MultipartBody.Part> makeMultpart(String key, List<File> files){
+    public List<MultipartBody.Part> makeMultpart(String key,@NonNull List<File> files){
 
         MultipartBody.Builder  builder=new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
 
-        if(files==null){
-            //TODO 抛异常
-            return null;
-        }
         for (int i=0;i<files.size();i++){
             if(files.get(i)==null){
-                //TODO 抛异常
+                try {
+                    throw new RequestException("文件为null");
+                } catch (RequestException e) {
+                    e.printStackTrace();
+                }
                 return null;
             }
+
             RequestBody body=RequestBody.create(MediaType.parse("multipart/form-data"),files.get(i));
-            builder.addFormDataPart(key,files.get(i).getName(),body);
+            UpLoadProgressRequestBody upLoadBody=new UpLoadProgressRequestBody(body);
+            builder.addFormDataPart(key,files.get(i).getName(),upLoadBody);
 
         }
         return builder.build().parts();

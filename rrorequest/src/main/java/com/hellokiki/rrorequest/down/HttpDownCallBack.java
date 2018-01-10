@@ -7,6 +7,8 @@ import com.hellokiki.rrorequest.ProgressListener;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.HashMap;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -23,6 +25,7 @@ public class HttpDownCallBack<T> implements Observer<T> ,ProgressListener{
     private Disposable mDisposable;
     private long mCurrentRead;
     private DownInfo mInfo;
+    private onResultListener mResultListener;
 
 
     public HttpDownCallBack(DownInfo info) {
@@ -45,18 +48,21 @@ public class HttpDownCallBack<T> implements Observer<T> ,ProgressListener{
     }
 
     public void onStart(){
+        mInfo.setState(DownState.START);
         if(mListener!=null){
             mListener.onStart();
         }
     }
 
     public void onPause(){
+        mInfo.setState(DownState.PAUSE);
         if(mListener!=null){
             mListener.onPause(mInfo.getReadLength());
         }
     }
 
     public void onShop(){
+        mInfo.setState(DownState.STOP);
         if(mListener!=null){
             mListener.onStop(mInfo.getReadLength());
         }
@@ -65,15 +71,23 @@ public class HttpDownCallBack<T> implements Observer<T> ,ProgressListener{
 
     @Override
     public void onError(Throwable e) {
+        mInfo.setState(DownState.ERROR);
         if(mListener!=null){
-            mListener.onError(e.toString());
+            mListener.onError(mInfo,e.toString());
+        }
+        if(mResultListener!=null){
+            mResultListener.onError(mInfo);
         }
     }
 
     @Override
     public void onComplete() {
+        mInfo.setState(DownState.FINISH);
         if(mListener!=null){
-            mListener.onFinish();
+            mListener.onFinish(mInfo);
+        }
+        if(mResultListener!=null){
+            mResultListener.onFinish(mInfo);
         }
     }
 
@@ -88,12 +102,17 @@ public class HttpDownCallBack<T> implements Observer<T> ,ProgressListener{
         mInfo.setReadLength(read);
 
         if(mListener!=null){
-            Observable.just(read).observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<Long>() {
-                @Override
-                public void accept(@NonNull Long aLong) throws Exception {
-                    mListener.onProgress(aLong,mInfo.getCountLength());
-                }
-            });
+            if(mInfo.getState()==DownState.PAUSE||mInfo.getState()==DownState.STOP){
+                return;
+            }else{
+                Observable.just(read).observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(@NonNull Long aLong) throws Exception {
+                        Log.e("2018","progress = "+aLong);
+                        mListener.onProgress(aLong,mInfo.getCountLength());
+                    }
+                });
+            }
 
         }
     }
@@ -101,4 +120,14 @@ public class HttpDownCallBack<T> implements Observer<T> ,ProgressListener{
     public Disposable getDisposable() {
         return mDisposable;
     }
+
+    public void setOnResultListener(onResultListener listener){
+        mResultListener=listener;
+    }
+
+    public interface onResultListener{
+        void onFinish(DownInfo info);
+        void onError(DownInfo info);
+    }
+
 }

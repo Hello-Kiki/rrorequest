@@ -26,6 +26,6 @@ public class DownloadInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Response response=chain.proceed(chain.request());
-        return response.newBuilder().body(new ProgressResponseBody(response.body(),mListener)).build();
+        return response.newBuilder().body(new DownProgressResponseBody(response.body(),mListener)).build();
     }
 }

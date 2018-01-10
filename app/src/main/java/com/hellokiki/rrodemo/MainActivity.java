@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.hellokiki.rrodemo.down.DownActivity;
+import com.hellokiki.rrodemo.down.MoreThreadDownActivity;
 import com.hellokiki.rrorequest.HttpManager;
 import com.hellokiki.rrorequest.SimpleCallBack;
 
@@ -26,8 +27,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mTextView= (TextView) findViewById(R.id.text_view);
 
-//        HttpManager.baseUrl("http://zd.gzrcqf.com");
-        HttpManager.baseUrl("http://192.168.137.147:8080");
+        HttpManager.baseUrl("http://zd.gzrcqf.com");
+//        HttpManager.baseUrl("http://192.168.137.147:8080");
 
     }
 
@@ -48,6 +49,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.e("2017","失败-->"+e.toString());
                     }
                 });
+
+    }
+
+
+    public void upload(){
+
 
     }
 

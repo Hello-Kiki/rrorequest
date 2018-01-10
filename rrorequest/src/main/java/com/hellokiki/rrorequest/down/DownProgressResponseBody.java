@@ -18,13 +18,13 @@ import okio.Source;
  * Created by 黄麒羽 on 2017/12/20.
  */
 
-public class ProgressResponseBody extends ResponseBody {
+public class DownProgressResponseBody extends ResponseBody {
 
     private ResponseBody mBody;
     private ProgressListener mListener;
     private BufferedSource mBufferedSource;
 
-    public ProgressResponseBody(ResponseBody mBody, ProgressListener mListener) {
+    public DownProgressResponseBody(ResponseBody mBody, ProgressListener mListener) {
         this.mBody = mBody;
         this.mListener = mListener;
     }

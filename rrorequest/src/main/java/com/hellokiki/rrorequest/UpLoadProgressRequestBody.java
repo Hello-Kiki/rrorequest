@@ -18,7 +18,7 @@ import okio.Sink;
  * Created by 黄麒羽 on 2017/12/18.
  */
 
-public class ProgressRequestBody extends RequestBody {
+public class UpLoadProgressRequestBody extends RequestBody {
 
     //待包装请求体
     private final RequestBody mRequestBody;
@@ -26,7 +26,7 @@ public class ProgressRequestBody extends RequestBody {
     //包装完成后的BufferedSink
     private BufferedSink mBufferedSink;
 
-    public ProgressRequestBody(RequestBody mRequestBody) {
+    public UpLoadProgressRequestBody(RequestBody mRequestBody) {
         this.mRequestBody = mRequestBody;
     }
 

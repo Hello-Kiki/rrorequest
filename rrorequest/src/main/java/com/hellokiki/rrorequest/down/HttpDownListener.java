@@ -12,9 +12,9 @@ public interface HttpDownListener {
 
     void onStop(long read);
 
-    void onFinish();
+    void onFinish(DownInfo info);
 
-    void onError(String s);
+    void onError(DownInfo info,String s);
 
     void onProgress(long currentRead,long addLength);
 

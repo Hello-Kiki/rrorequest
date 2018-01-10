@@ -21,6 +21,9 @@ public class DownInfo {
 
     private int state;
 
+    private boolean isStartMoreThread=false;
+
+    private int downThreadCount=3;
 
     public long getId() {
         return id;
@@ -78,6 +81,21 @@ public class DownInfo {
         this.state = state;
     }
 
+    public boolean isStartMoreThread() {
+        return isStartMoreThread;
+    }
+
+    public void setStartMoreThread(boolean startMoreThread) {
+        isStartMoreThread = startMoreThread;
+    }
+
+    public int getDownThreadCount() {
+        return downThreadCount;
+    }
+
+    public void setDownThreadCount(int downThreadCount) {
+        this.downThreadCount = downThreadCount;
+    }
 
     @Override
     public String toString() {
@@ -89,6 +107,8 @@ public class DownInfo {
                 ", savePath='" + savePath + '\'' +
                 ", listener=" + listener +
                 ", state=" + state +
+                ", isStartMoreThread=" + isStartMoreThread +
+                ", downThreadCount=" + downThreadCount +
                 '}';
     }
 }

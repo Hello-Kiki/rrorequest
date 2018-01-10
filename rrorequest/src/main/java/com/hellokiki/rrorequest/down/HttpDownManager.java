@@ -1,10 +1,6 @@
 package com.hellokiki.rrorequest.down;
 
-import android.util.Log;
-
-import com.google.gson.JsonObject;
 import com.hellokiki.rrorequest.HttpManager;
-import com.hellokiki.rrorequest.ProgressListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
@@ -38,11 +35,12 @@ public class HttpDownManager {
     private String mBaseUrl;
     private Set<DownInfo> mInfoSets;
     private Map<String,HttpDownCallBack> mCallBackMap;
+    private int mDownThreadCount=3;         //多线程下载开启的线程数
 
     private static HttpDownManager mHttpDownManager;
-    private int CONNENTTIMEOUT = 6;
-    private int READTIMEOUT = 20;
-    private int WRITETIMEOUT = 20;
+    private int CONNECT_TIME_OUT = 6;     //全局连接超时时间(秒)
+    private int READ_TIME_OUT = 20;       //全局读取超时时间(秒)
+    private int WRITE_TIME_OUT = 20;      //全局写入超时时间(秒)
 
     private boolean mIsDeleteFileForShop=false;      //调用shop方法是否删除为完成的文件
 
@@ -66,15 +64,22 @@ public class HttpDownManager {
         this.mBaseUrl=baseUrl;
     }
 
-
     /**
      * 开始下载
      * @param info  下载信息
      * @param listener  监听
      */
     public void start(final DownInfo info,HttpDownListener listener){
+        start(info,listener,false);
+    }
 
-        Log.e("2017","info = "+info.toString());
+    /**
+     * 开始下载
+     * @param info  下载信息
+     * @param listener  监听
+     *  @param isMoreThread 是否多线程下载
+     */
+    public void start(final DownInfo info,HttpDownListener listener,boolean isMoreThread){
 
         if(info==null||info.getUrl()==null){
             return;
@@ -83,22 +88,32 @@ public class HttpDownManager {
             mCallBackMap.get(info.getUrl()).setDownInfo(info);
             return;
         }
-        Log.e("2017","info22 = "+info.toString());
 
-        File file=new File(info.getSavePath());
-        Log.e("2017",file.exists()+"");
-        Log.e("2017",file.getAbsolutePath());
-        Log.e("2017",file.getPath());
+        if(info.getReadLength()==info.getCountLength()){
+            info.setReadLength(0);
+        }
 
         info.setListener(listener);
         HttpDownCallBack callBack=new HttpDownCallBack(info);
 
+        callBack.setOnResultListener(new HttpDownCallBack.onResultListener() {
+            @Override
+            public void onFinish(DownInfo info) {
+                mCallBackMap.remove(info.getUrl());
+            }
+
+            @Override
+            public void onError(DownInfo info) {
+                mCallBackMap.remove(info.getUrl());
+            }
+        });
+
         DownloadInterceptor interceptor=new DownloadInterceptor(callBack);
 
         OkHttpClient.Builder builder=new OkHttpClient.Builder();
-        builder.connectTimeout(CONNENTTIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(READTIMEOUT, TimeUnit.SECONDS)
-                .writeTimeout(WRITETIMEOUT, TimeUnit.SECONDS)
+        builder.connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
+                .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
+                .writeTimeout(WRITE_TIME_OUT, TimeUnit.SECONDS)
                 .addInterceptor(interceptor)
                 .retryOnConnectionFailure(true);
 
@@ -109,13 +124,29 @@ public class HttpDownManager {
                 .client(builder.build())
                 .build();
 
-
         if(listener!=null){
             listener.onStart();
         }
-        Log.e("2017","断点=="+info.getReadLength());
 
-        retrofit.create(DownLoadApi.class).downFile("bytes=" + info.getReadLength() + "-", info.getUrl())
+        downLoad(retrofit,info.getReadLength(),info).subscribe(callBack);
+
+
+        callBack.onStart();
+
+        info.setState(DownState.START);
+        mInfoSets.add(info);
+        mCallBackMap.put(info.getUrl(),callBack);
+    }
+
+    /**
+     * 单线程下载
+     * @param retrofit Retrofit
+     * @param start 开始位置
+     * @param info 下载信息
+     * @return Observable
+     */
+    private Observable downLoad(Retrofit retrofit, long start, final DownInfo info){
+        return  retrofit.create(DownLoadApi.class).downFile("bytes=" + start + "-", info.getUrl())
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .map(new Function<ResponseBody, DownInfo>() {
@@ -126,14 +157,52 @@ public class HttpDownManager {
                         return info;
                     }
                 })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(callBack);
-
-        callBack.onStart();
-        info.setState(DownState.START);
-        mInfoSets.add(info);
-        mCallBackMap.put(info.getUrl(),callBack);
+                .observeOn(AndroidSchedulers.mainThread());
     }
+
+    /**
+     * 多线程下载，默认3个线程
+     * @param retrofit Retrofit
+     * @param start 开始位置
+     * @param end   结束位置
+     * @param info 下载信息
+     * @return Observable
+     */
+//    private Observable downLoad(final Retrofit retrofit, long start, final long end, final DownInfo info, final HttpDownCallBack callBack){
+//        String str = "";
+//        if (end == -1) {
+//            str = "";
+//        } else {
+//            str = end + "";
+//        }
+//        return  retrofit.create(DownLoadApi.class).downFile("bytes=" + start + "-"+str, info.getUrl())
+//                .subscribeOn(Schedulers.io())
+//                .unsubscribeOn(Schedulers.io())
+//                .map(new Function<ResponseBody, ResponseBody>() {
+//                    @Override
+//                    public ResponseBody apply(@NonNull ResponseBody responseBody) throws Exception {
+//                        return responseBody;
+//                    }
+//                })
+//                .observeOn(Schedulers.computation()).doOnNext(new Consumer<ResponseBody>() {
+//                    @Override
+//                    public void accept(@NonNull ResponseBody responseBody) throws Exception {
+//
+//                        Log.e("2017","responseBody--length=="+responseBody.contentLength());
+//                        if (end == -1) {
+//                            long interval=responseBody.contentLength()/info.getDownThreadCount();
+//                            Log.e("2017","平均-》 "+interval);
+//
+//                            downLoad(retrofit,0,interval,info,callBack).mergeWith(downLoad(retrofit,interval,interval*2,info,callBack))
+//                                    .mergeWith(downLoad(retrofit,interval*2,responseBody.contentLength(),info,callBack)).subscribe(callBack);
+//
+//                        }else{
+//                            writeToCaches(responseBody,info);
+//                        }
+//
+//                    }
+//                }).observeOn(AndroidSchedulers.mainThread());
+//    }
 
 
     /**
@@ -144,10 +213,12 @@ public class HttpDownManager {
     public DownInfo pause(DownInfo info){
         if(info!=null){
             HttpDownCallBack callBack=mCallBackMap.get(info.getUrl());
-            callBack.getDisposable().dispose();
-            callBack.onPause();
-            info.setState(DownState.PAUSE);
-            mCallBackMap.remove(info.getUrl());
+            if(callBack!=null){
+                callBack.getDisposable().dispose();
+                callBack.onPause();
+                info.setState(DownState.PAUSE);
+                mCallBackMap.remove(info.getUrl());
+            }
         }
         return info;
     }
@@ -160,25 +231,26 @@ public class HttpDownManager {
     public DownInfo stop(DownInfo info){
         if(info!=null){
             HttpDownCallBack callBack=mCallBackMap.get(info.getUrl());
-            callBack.getDisposable().dispose();
-            callBack.onShop();
-            info.setState(DownState.STOP);
-            mCallBackMap.remove(info.getUrl());
+            if(callBack!=null){
+                callBack.getDisposable().dispose();
+                callBack.onShop();
+                info.setState(DownState.STOP);
+                mCallBackMap.remove(info.getUrl());
 
-            if(mIsDeleteFileForShop){
-                File file=new File(info.getSavePath());
-                if(file.exists()){
-                    file.delete();
+                if(mIsDeleteFileForShop){
+                    File file=new File(info.getSavePath());
+                    if(file.exists()){
+                        file.delete();
+                    }
                 }
             }
-
         }
         return info;
     }
 
     /**
      * 暂停全部
-     * @return
+     * @return DownInfo
      */
     public Set<DownInfo> pauseAll(){
         Set<DownInfo> infos=mInfoSets;
@@ -192,7 +264,7 @@ public class HttpDownManager {
 
     /**
      * 停止全部
-     * @return
+     * @return DownInfo
      */
     public Set<DownInfo> shopAll(){
         Set<DownInfo> infos=mInfoSets;
@@ -260,7 +332,26 @@ public class HttpDownManager {
         this.mIsDeleteFileForShop=isDeleteFile;
     }
 
+    /**
+     * 设置全局连接超时时间(秒)
+     */
+    public void setConnectTimeOut(int timeOut){
+        this.CONNECT_TIME_OUT=timeOut;
+    }
 
+    /**
+     * 设置全局读取超时时间(秒)
+     */
+    public void setReadTimeOut(int timeOut){
+        this.READ_TIME_OUT=timeOut;
+    }
+
+    /**
+     * 设置全局写入超时时间(秒)
+     */
+    public void setWriteTimeOut(int timeOut){
+        this.WRITE_TIME_OUT=timeOut;
+    }
 
 
 

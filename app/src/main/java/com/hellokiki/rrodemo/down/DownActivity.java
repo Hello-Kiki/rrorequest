@@ -37,8 +37,8 @@ public class DownActivity extends AppCompatActivity implements View.OnClickListe
         mInfoList=new ArrayList<>();
 
         DownInfo downInfo=new DownInfo();
-        downInfo.setUrl("http://192.168.137.147:8080/test/hello.mp4");
-        downInfo.setSavePath(Environment.getExternalStorageDirectory().getAbsolutePath()+"/rro/test1.mp4");
+        downInfo.setUrl("http://f5.market.mi-img.com/download/AppStore/076864e6b114181150490b8dff8837ca4ea43cace/com.chongdingdahui.app.apk");
+        downInfo.setSavePath(Environment.getExternalStorageDirectory().getAbsolutePath()+"/rro/test1.apk");
         mInfoList.add(downInfo);
 
         DownInfo downInfo2=new DownInfo();

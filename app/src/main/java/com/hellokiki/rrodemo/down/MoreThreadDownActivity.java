@@ -1,26 +1,21 @@
 package com.hellokiki.rrodemo.down;
 
-import android.content.Context;
-import android.support.annotation.Nullable;
-import android.util.AttributeSet;
+import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.hellokiki.rrodemo.R;
 import com.hellokiki.rrorequest.down.DownInfo;
-import com.hellokiki.rrorequest.down.DownState;
 import com.hellokiki.rrorequest.down.HttpDownListener;
 import com.hellokiki.rrorequest.down.HttpDownManager;
 
-/**
- * Created by 黄麒羽 on 2017/12/22.
- */
-
-public class DownItemView extends LinearLayout implements View.OnClickListener {
+//多线程下载
+public class MoreThreadDownActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ProgressBar mProgressBar;
     private TextView mTextViewProgress;
@@ -29,17 +24,12 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
     private DownInfo mDownInfo;
     private HttpDownManager manager;
 
-    public DownItemView(Context context) {
-        this(context,null);
-    }
+    String url="http://p.gdown.baidu.com/1d8c55276f085552a1724cdf2ed7002eb7944c74875d2eb637c123c1f9470e6e21529437bf46f9c5c8edc345211a5824c58f29b5df2eeb115aff3e91dd529997d800fd1e7600cf21706a5c2fea70f826b436959b6402346bb4648e53a499c6445236415e70da089ae93a66950937e7a869f7ea5f0cbc60af0de15fa81430ada2";
 
-    public DownItemView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs,0);
-    }
-
-    public DownItemView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        inflate(context, R.layout.layout_down_item_view,this);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_more_thread_down);
 
         mProgressBar= (ProgressBar) findViewById(R.id.progress);
         mTextViewProgress= (TextView) findViewById(R.id.text_view_progress);
@@ -48,12 +38,11 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
         findViewById(R.id.button_shop).setOnClickListener(this);
 
         manager=HttpDownManager.getInstance();
-    }
+        mDownInfo=new DownInfo();
+        mDownInfo.setUrl(url);
+        mDownInfo.setSavePath(Environment.getExternalStorageDirectory().getAbsolutePath()+"/rro/qq.apk");
 
-    public void setDownInfo(DownInfo info){
-        mDownInfo=info;
     }
-
 
     public void startDown(){
         if(mDownInfo==null||"".equals(mDownInfo.getUrl())){
@@ -63,7 +52,6 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
         manager.start(mDownInfo, new HttpDownListener() {
             @Override
             public void onStart() {
-                Log.e("2017","onStart");
                 mButtonDown.setText("暂停");
             }
 
@@ -83,7 +71,6 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
 
             @Override
             public void onFinish(DownInfo info) {
-                Log.e("2017","onFinish");
                 mDownInfo=info;
                 mButtonDown.setText("下载");
                 mTextViewProgress.setText("下载成功");
@@ -91,7 +78,6 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
 
             @Override
             public void onError(DownInfo info,String s) {
-                Log.e("2017","onError="+s.toString());
                 mDownInfo=info;
                 mButtonDown.setText("下载");
                 mTextViewProgress.setText("下载失败");
@@ -106,6 +92,7 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
         });
     }
 
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -113,7 +100,7 @@ public class DownItemView extends LinearLayout implements View.OnClickListener {
                 startDown();
                 break;
             case R.id.button_shop:
-                manager.stop(mDownInfo);
+                manager.pause(mDownInfo);
                 break;
         }
     }
