@@ -1,6 +1,7 @@
 package com.hellokiki.rrodemo;
 
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,7 +12,19 @@ import com.google.gson.JsonObject;
 import com.hellokiki.rrodemo.down.DownActivity;
 import com.hellokiki.rrodemo.down.MoreThreadDownActivity;
 import com.hellokiki.rrorequest.HttpManager;
+import com.hellokiki.rrorequest.MultipartUtil;
+import com.hellokiki.rrorequest.ProgressListener;
 import com.hellokiki.rrorequest.SimpleCallBack;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -55,6 +68,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void upload(){
 
+        Map<String,RequestBody> textBody=MultipartUtil.newInstance()
+                .addParam("text1","123")
+                .addParam("text2","456")
+                .Build();
+
+        List<File> files=new ArrayList<>();
+        File file=new File(Environment.getExternalStorageDirectory()+"test.png");
+        files.add(file);
+
+        //文件上传进度只支持单文件上传的时候使用
+        List<MultipartBody.Part> parts= MultipartUtil.makeMultpart("images", files, new ProgressListener() {
+            @Override
+            public void onProgress(long read, long length, boolean done) {
+
+            }
+        });
+        HttpManager.getInstance().create(ApiService.class).uploadFile(textBody,parts)
+                .compose(HttpManager.<JsonObject>applySchedulers())
+                .subscribe(new SimpleCallBack<JsonObject>() {
+                    @Override
+                    public void onSuccess(JsonObject jsonObject) {
+                        //请求成功
+                    }
+
+                    @Override
+                    public void onFailure(Throwable e) {
+                        //请求失败
+                    }
+                });
 
     }
 

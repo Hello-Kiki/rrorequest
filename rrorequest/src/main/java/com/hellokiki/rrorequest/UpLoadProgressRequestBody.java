@@ -26,8 +26,15 @@ public class UpLoadProgressRequestBody extends RequestBody {
     //包装完成后的BufferedSink
     private BufferedSink mBufferedSink;
 
+    private ProgressListener mListener;
+
     public UpLoadProgressRequestBody(RequestBody mRequestBody) {
         this.mRequestBody = mRequestBody;
+    }
+
+    public UpLoadProgressRequestBody(RequestBody mRequestBody,ProgressListener listener) {
+        this.mRequestBody = mRequestBody;
+        this.mListener=listener;
     }
 
 
@@ -69,7 +76,9 @@ public class UpLoadProgressRequestBody extends RequestBody {
                 Observable.just(currentByteLength).observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<Long>() {
                     @Override
                     public void accept(@NonNull Long aLong) throws Exception {
-
+                        if(mListener!=null){
+                            mListener.onProgress(aLong,allByteLength,aLong==allByteLength);
+                        }
                     }
                 });
 
