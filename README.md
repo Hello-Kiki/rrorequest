@@ -5,6 +5,20 @@
               文件上传（图文，多文件，单文件带进度）
               文件下载（可多文件同时，带进度）
 
+    Add it in your root build.gradle at the end of repositories:
+
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+    Step 2. Add the dependency
+
+	dependencies {
+	        compile 'com.github.Hello-Kiki:RRODemo:1.1'
+	}
+
 
 ## 普通请求调用
 
