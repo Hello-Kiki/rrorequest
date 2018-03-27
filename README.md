@@ -1,4 +1,4 @@
-# RRODemo
+# rrorequest
 
     对retrofit2+rxjava2+okhttp3 进行封装使用，尽可能方便的调用
     封装功能：普通请求（post,get）
