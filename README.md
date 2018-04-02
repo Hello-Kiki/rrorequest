@@ -16,7 +16,7 @@
     Step 2. Add the dependency
 
 	dependencies {
-	        compile 'com.github.Hello-Kiki:RRODemo:1.1'
+	         compile 'com.github.Hello-Kiki:rrorequest:1.1'
 	}
 
 
