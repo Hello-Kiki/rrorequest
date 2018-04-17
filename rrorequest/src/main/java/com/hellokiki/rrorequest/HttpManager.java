@@ -8,6 +8,7 @@ import io.reactivex.ObservableTransformer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -19,6 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class HttpManager {
 
     public static String BaseUrl;
+    public static Converter.Factory mFactory;
 
     private int CONNENTTIMEOUT = 6;
     private int READTIMEOUT = 20;
@@ -33,7 +35,7 @@ public class HttpManager {
 
     public static HttpManager getInstance() {
         if (mHttpManager == null) {
-            synchronized (HttpManager.class){
+            synchronized (HttpManager.class) {
                 mHttpManager = new HttpManager();
             }
         }
@@ -44,12 +46,17 @@ public class HttpManager {
         BaseUrl = url;
     }
 
+    public static void setFactory(Converter.Factory factory) {
+        mFactory = factory;
+    }
+
     /**
      * 统一的调度转换器
+     *
      * @param <T>
      * @return
      */
-    public static  <T> ObservableTransformer<T, T> applySchedulers() {
+    public static <T> ObservableTransformer<T, T> applySchedulers() {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(Observable<T> observable) {
@@ -61,18 +68,33 @@ public class HttpManager {
     }
 
 
-    public <T> T  create(Class<T> service){
-       return mRetrofit.create(service);
+    public <T> T create(Class<T> service) {
+        return mRetrofit.create(service);
     }
 
 
     private void initRetrofit() {
         mRetrofit = new Retrofit.Builder()
                 .baseUrl(BaseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(mFactory == null ? GsonConverterFactory.create() : mFactory)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(getOkHttpClient())
                 .build();
+    }
+
+    /**
+     * 创建单独的Converter.Factory对应的Retrofit
+     * @param factory   Converter.Factory
+     * @return  Retrofit
+     */
+    public Retrofit addConverterFactory(Converter.Factory factory){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BaseUrl)
+                .addConverterFactory(factory)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(getOkHttpClient())
+                .build();
+        return retrofit;
     }
 
     private OkHttpClient getOkHttpClient() {

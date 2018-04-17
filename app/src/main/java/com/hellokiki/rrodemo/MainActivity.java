@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         HttpManager.baseUrl("http://zd.gzrcqf.com");
 //        HttpManager.baseUrl("http://192.168.137.147:8080");
-
     }
 
 
