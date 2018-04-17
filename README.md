@@ -1,9 +1,23 @@
-# RRODemo
+# rrorequest
 
     对retrofit2+rxjava2+okhttp3 进行封装使用，尽可能方便的调用
     封装功能：普通请求（post,get）
               文件上传（图文，多文件，单文件带进度）
               文件下载（可多文件同时，带进度）
+
+    Add it in your root build.gradle at the end of repositories:
+
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+    Step 2. Add the dependency
+
+	dependencies {
+	         compile 'com.github.Hello-Kiki:rrorequest:1.1'
+	}
 
 
 ## 普通请求调用
