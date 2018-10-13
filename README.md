@@ -126,6 +126,28 @@
               manager.pause(mDownInfo); //暂停下载
              manager.stop(mDownInfo); //停止下载
 
+ ## 取消请求
+        eg:
+                 HttpManager.getInstance().create(ApiService.class).getData()
+                    .compose(HttpManager.<JsonObject>applySchedulers())
+                    .subscribe(new SimpleCallBack<JsonObject>("123") {      //在构造函数中闯入标记
+                        @Override
+                        public void onSuccess(JsonObject jsonObject) {
+                            Log.e("2017","成功-->"+jsonObject.toString());
+                            mTextView.setText(jsonObject.toString());
+                        }
+
+                        @Override
+                        public void onFailure(Throwable e) {
+                            Log.e("2017","失败-->"+e.toString());
+                        }
+                    });
+
+        在new SimpleCallBack<JsonObject>("123")  中增加tag 参数，表示该次请求的标记
+
+       HttpManager.getInstance().cancel("123"); //单个请求取消
+
+       HttpManager.getInstance().cancelAllRequest();   //取消全部请求
 
 
  ## 其他

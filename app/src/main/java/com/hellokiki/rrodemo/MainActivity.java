@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
         HttpManager.getInstance().cancel("1213");
+        HttpManager.getInstance().cancelAllRequest();
     }
 
 
