@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.hellokiki.rrodemo.down.DownActivity;
-import com.hellokiki.rrodemo.down.MoreThreadDownActivity;
 import com.hellokiki.rrorequest.HttpManager;
 import com.hellokiki.rrorequest.MultipartUtil;
 import com.hellokiki.rrorequest.ProgressListener;
@@ -21,10 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -41,15 +38,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTextView= (TextView) findViewById(R.id.text_view);
 
         HttpManager.baseUrl("http://zd.gzrcqf.com");
-//        HttpManager.baseUrl("http://192.168.137.147:8080");
+//        HttpManager.baseUrl("https://gank.io");
     }
 
 
     public void request(){
-
+        //https://gank.io/api/xiandu/data/id/appinn/count/10/page/1
         HttpManager.getInstance().create(ApiService.class).getData()
                 .compose(HttpManager.<JsonObject>applySchedulers())
-                .subscribe(new SimpleCallBack<JsonObject>() {
+                .subscribe(new SimpleCallBack<JsonObject>("123") {
                     @Override
                     public void onSuccess(JsonObject jsonObject) {
                         Log.e("2017","成功-->"+jsonObject.toString());
@@ -61,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.e("2017","失败-->"+e.toString());
                     }
                 });
-
+        HttpManager.getInstance().cancel("1213");
     }
 
 

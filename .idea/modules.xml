@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/RRODemo.iml" filepath="$PROJECT_DIR$/RRODemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/rrorequest/rrorequest.iml" filepath="$PROJECT_DIR$/rrorequest/rrorequest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rrorequest.iml" filepath="$PROJECT_DIR$/rrorequest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rrorequest/rrorequest-rrorequest.iml" filepath="$PROJECT_DIR$/rrorequest/rrorequest-rrorequest.iml" />
     </modules>
   </component>
 </project>

@@ -9,6 +9,7 @@ import io.reactivex.Observable;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -24,6 +25,9 @@ public interface ApiService {
 
     @GET("/api/goods/join_member_goodslist")
     Observable<JsonObject>  getData();
+
+    @GET("/api/xiandu/categories")
+    Observable<JsonObject>  getData2();
 
     @GET("/test/test.zip")
     Observable<JsonObject> downFile();
